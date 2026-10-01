@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'data/task_repository.dart';
+import 'presentation/bloc/process_bloc.dart';
+import 'presentation/ui/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -9,17 +14,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      // Додаємо пустий Scaffold як стартовий екран
-      home: const Scaffold(
-        body: Center(
-          child: Text('Чистий аркуш!'),
+    final taskRepository = TaskRepository();
+
+    return BlocProvider<ProcessBloc>(
+      create: (_) => ProcessBloc(taskRepository: taskRepository),
+      child: MaterialApp(
+        title: 'Webspark Pathfinder',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          useMaterial3: true,
         ),
+        home: const HomeScreen(),
       ),
     );
   }
