@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/models/result_dto.dart';
+import '../../data/models/task_dto.dart';
 import '../../data/task_repository.dart';
 import '../../domain/pathfinder_service.dart';
 import '../../domain/point_entity.dart';
@@ -34,7 +35,11 @@ typedef PathfinderRunner = Future<List<Point>> Function(PathfinderIsolateParams 
 class ProcessBloc extends Bloc<ProcessEvent, ProcessState> {
   final TaskRepository _taskRepository;
   final PathfinderRunner _pathfinderRunner;
+  List<TaskDto> _tasks = [];
   List<ResultDto> _calculatedResults = [];
+
+  List<TaskDto> get tasks => List.unmodifiable(_tasks);
+  List<ResultDto> get results => List.unmodifiable(_calculatedResults);
 
   ProcessBloc({
     required TaskRepository taskRepository,
@@ -57,9 +62,10 @@ class ProcessBloc extends Bloc<ProcessEvent, ProcessState> {
   ) async {
     emit(const ProcessLoading());
     try {
-      final tasks = await _taskRepository.fetchTasks(event.baseUrl);
+      final fetchedTasks = await _taskRepository.fetchTasks(event.baseUrl);
+      _tasks = fetchedTasks;
 
-      if (tasks.isEmpty) {
+      if (fetchedTasks.isEmpty) {
         _calculatedResults = [];
         emit(const ProcessCalculated([]));
         return;
@@ -67,8 +73,8 @@ class ProcessBloc extends Bloc<ProcessEvent, ProcessState> {
 
       final results = <ResultDto>[];
 
-      for (int i = 0; i < tasks.length; i++) {
-        final task = tasks[i];
+      for (int i = 0; i < fetchedTasks.length; i++) {
+        final task = fetchedTasks[i];
 
         // Execute PathfinderService in a background isolate (compute / Isolate.run)
         // to prevent UI freezing on large grid matrices (e.g. 100x100).
@@ -86,7 +92,7 @@ class ProcessBloc extends Bloc<ProcessEvent, ProcessState> {
         );
         results.add(result);
 
-        final int percentage = ((i + 1) * 100) ~/ tasks.length;
+        final int percentage = ((i + 1) * 100) ~/ fetchedTasks.length;
         emit(ProcessCalculating(percentage));
       }
 
