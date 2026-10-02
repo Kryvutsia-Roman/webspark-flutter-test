@@ -32,88 +32,92 @@ class PreviewScreen extends StatelessWidget {
         title: const Text('Preview screen'),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                pathString,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (width == 0)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(child: Text('Empty grid')),
+                )
+              else
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: width,
+                    mainAxisSpacing: 0,
+                    crossAxisSpacing: 0,
+                    childAspectRatio: 1.0,
+                  ),
+                  itemCount: itemCount,
+                  itemBuilder: (context, index) {
+                    final int y = index ~/ width;
+                    final int x = index % width;
+                    final Point currentPoint = Point(x: x, y: y);
+
+                    Color cellColor;
+                    Color textColor;
+
+                    if (currentPoint == start) {
+                      cellColor = const Color(0xFF64FFDA);
+                      textColor = Colors.black;
+                    } else if (currentPoint == end) {
+                      cellColor = const Color(0xFF009688);
+                      textColor = Colors.white;
+                    } else if (grid[y][x] == 'X') {
+                      cellColor = const Color(0xFF000000);
+                      textColor = Colors.white;
+                    } else if (stepSet.contains(currentPoint)) {
+                      cellColor = const Color(0xFF4CAF50);
+                      textColor = Colors.white;
+                    } else {
+                      cellColor = const Color(0xFFFFFFFF);
+                      textColor = Colors.black;
+                    }
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: cellColor,
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Center(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Padding(
+                            padding: const EdgeInsets.all(2.0),
+                            child: Text(
+                              '($x,$y)',
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  pathString,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: width == 0
-                  ? const Center(child: Text('Empty grid'))
-                  : Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: GridView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: width,
-                          mainAxisSpacing: 0,
-                          crossAxisSpacing: 0,
-                          childAspectRatio: 1.0,
-                        ),
-                        itemCount: itemCount,
-                        itemBuilder: (context, index) {
-                          final int y = index ~/ width;
-                          final int x = index % width;
-                          final Point currentPoint = Point(x: x, y: y);
-
-                          Color cellColor;
-                          Color textColor;
-
-                          if (currentPoint == start) {
-                            cellColor = const Color(0xFF64FFDA);
-                            textColor = Colors.black;
-                          } else if (currentPoint == end) {
-                            cellColor = const Color(0xFF009688);
-                            textColor = Colors.white;
-                          } else if (grid[y][x] == 'X') {
-                            cellColor = const Color(0xFF000000);
-                            textColor = Colors.white;
-                          } else if (stepSet.contains(currentPoint)) {
-                            cellColor = const Color(0xFF4CAF50);
-                            textColor = Colors.white;
-                          } else {
-                            cellColor = const Color(0xFFFFFFFF);
-                            textColor = Colors.black;
-                          }
-
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: cellColor,
-                              border: Border.all(
-                                color: Colors.black,
-                                width: 1.0,
-                              ),
-                            ),
-                            child: Center(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Text(
-                                    '($x,$y)',
-                                    style: TextStyle(
-                                      color: textColor,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
